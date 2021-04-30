@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 
@@ -38,18 +40,4 @@ public class ResolutionsApplication extends WebSecurityConfigurerAdapter {
 	public UserDetailsService userDetailsService(UserRepository users) {
 		return new UserRepositoryUserDetailsService(users);
 	}
-
-//	@Bean
-//	public UserDetailsService userDetailsService(DataSource dataSource) {
-//		return new JdbcUserDetailsManager(dataSource);
-//
-////		return new InMemoryUserDetailsManager(
-////				org.springframework.security.core.userdetails.User
-////						.withUsername("user")
-//////						.password("{bcrypt}$2a$10$MywQEqdZFNIYnx.Ro/VQ0ulanQAl34B5xVjK2I/SDZNVGS5tHQ08W")
-////						.password("{bcrypt}$2a$10$gapS/EuYW0GtvZ8e3wcpguwffeOL1Fq1dX.wEY72n/mzpM3KcifKW") //coffee
-////						.authorities("resolution:read")
-////						.build());
-//	}
-
 }
