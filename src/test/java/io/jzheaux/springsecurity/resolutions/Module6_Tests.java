@@ -1,14 +1,25 @@
 package io.jzheaux.springsecurity.resolutions;
 
-import okhttp3.mockwebserver.Dispatcher;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.After;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.annotation;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldByType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType.BEARER;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -32,7 +42,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.jwt.BadJwtException;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
@@ -48,27 +57,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.annotation;
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldByType;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType.BEARER;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 @RunWith(SpringRunner.class)
-@AutoConfigureMockMvc(print= MockMvcPrint.NONE)
+@AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @SpringBootTest
 public class Module6_Tests {
 	@Autowired
@@ -130,10 +125,8 @@ public class Module6_Tests {
 		@ConditionalOnMissingBean
 		@Bean
 		OpaqueTokenIntrospector introspector(OAuth2ResourceServerProperties properties) {
-			return new NimbusOpaqueTokenIntrospector(
-					this.server.introspectionUri(),
-					properties.getOpaquetoken().getClientId(),
-					properties.getOpaquetoken().getClientSecret());
+			return new NimbusOpaqueTokenIntrospector(this.server.introspectionUri(),
+					properties.getOpaquetoken().getClientId(), properties.getOpaquetoken().getClientSecret());
 		}
 
 		@Bean
@@ -147,16 +140,17 @@ public class Module6_Tests {
 		@Autowired
 		AuthorizationServer authz;
 
-		@Autowired(required=false)
+		@Autowired(required = false)
 		void introspector(OpaqueTokenIntrospector introspector) throws Exception {
 			NimbusOpaqueTokenIntrospector nimbus = null;
 			if (introspector instanceof NimbusOpaqueTokenIntrospector) {
 				nimbus = (NimbusOpaqueTokenIntrospector) introspector;
 			} else if (introspector instanceof UserRepositoryOpaqueTokenIntrospector) {
-				Field delegate =
-						getDeclaredFieldByType(UserRepositoryOpaqueTokenIntrospector.class, OpaqueTokenIntrospector.class);
+				Field delegate = getDeclaredFieldByType(UserRepositoryOpaqueTokenIntrospector.class,
+						OpaqueTokenIntrospector.class);
 				if (delegate == null) {
-					delegate = getDeclaredFieldByType(UserRepositoryOpaqueTokenIntrospector.class, NimbusOpaqueTokenIntrospector.class);
+					delegate = getDeclaredFieldByType(UserRepositoryOpaqueTokenIntrospector.class,
+							NimbusOpaqueTokenIntrospector.class);
 				}
 				if (delegate != null) {
 					delegate.setAccessible(true);
@@ -217,7 +211,7 @@ public class Module6_Tests {
 				public MockResponse dispatch(RecordedRequest recordedRequest) {
 					MockResponse response = new MockResponse().setResponseCode(200);
 					String path = recordedRequest.getPath();
-					switch(path) {
+					switch (path) {
 						case "/user/user/fullName":
 							return response.setBody("User Userson");
 						case "/user/hasread/fullName":
@@ -237,10 +231,8 @@ public class Module6_Tests {
 
 	@Before
 	public void setup() throws Exception {
-		assertNotNull(
-				"Module 1: Could not find an instance of `UserDetailsService` in the application " +
-						"context. Make sure that you've already completed earlier modules before starting " +
-						"this one.",
+		assertNotNull("Module 1: Could not find an instance of `UserDetailsService` in the application "
+				+ "context. Make sure that you've already completed earlier modules before starting " + "this one.",
 				this.userDetailsService);
 	}
 
@@ -248,33 +240,30 @@ public class Module6_Tests {
 	public void task_1() throws Exception {
 		// @Cross Origin without credentials
 		CrossOrigin crossOrigin = annotation(CrossOrigin.class, "read");
-		assertNotNull(
-				"Task 1: Make sure that there is a `@CrossOrigin` annotation on `ResolutionController#read`",
+		assertNotNull("Task 1: Make sure that there is a `@CrossOrigin` annotation on `ResolutionController#read`",
 				crossOrigin);
 		assertNotEquals(
 				"Task 1: Since you are using Bearer Token authentication now, `allowCredentials` should be removed",
 				"true", crossOrigin.allowCredentials());
 
-		MvcResult result = this.mvc.perform(options("/resolutions")
-				.header("Access-Control-Request-Method", "GET")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Origin", "http://localhost:4000"))
+		MvcResult result = this.mvc
+				.perform(options("/resolutions").header("Access-Control-Request-Method", "GET")
+						.header("Access-Control-Allow-Credentials", "true").header("Origin", "http://localhost:4000"))
 				.andReturn();
 
 		assertNull(
-				"Task 1: Did an `OPTIONS` pre-flight request from `http://localhost:4000` for `GET /resolutions`, and it is allowing credentials;" +
-						"this should be shut off now that you are using Bearer Token authentication",
+				"Task 1: Did an `OPTIONS` pre-flight request from `http://localhost:4000` for `GET /resolutions`, and it is allowing credentials;"
+						+ "this should be shut off now that you are using Bearer Token authentication",
 				result.getResponse().getHeader("Access-Control-Allow-Credentials"));
 
-		result = this.mvc.perform(options("/" + UUID.randomUUID())
-				.header("Access-Control-Request-Method", "HEAD")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Origin", "http://localhost:4000"))
+		result = this.mvc
+				.perform(options("/" + UUID.randomUUID()).header("Access-Control-Request-Method", "HEAD")
+						.header("Access-Control-Allow-Credentials", "true").header("Origin", "http://localhost:4000"))
 				.andReturn();
 
 		assertNull(
-				"Task 1: Did an `OPTIONS` pre-flight request from `http://localhost:4000` for a random endpoint, and it is allowing credentials;" +
-						"this should be shut off now that you are using Bearer Token authentication",
+				"Task 1: Did an `OPTIONS` pre-flight request from `http://localhost:4000` for a random endpoint, and it is allowing credentials;"
+						+ "this should be shut off now that you are using Bearer Token authentication",
 				result.getResponse().getHeader("Access-Control-Allow-Credentials"));
 	}
 
@@ -283,29 +272,23 @@ public class Module6_Tests {
 		task_1();
 		// add UserService
 
-		assertNotNull(
-				"Task 2: Make sure to publish a `@Bean` of type `WebClient.Builder`",
-				this.web);
+		assertNotNull("Task 2: Make sure to publish a `@Bean` of type `WebClient.Builder`", this.web);
 
-		assertNotNull(
-				"Task 2: Make sure to publish your `UserService`",
-				this.userService);
+		assertNotNull("Task 2: Make sure to publish your `UserService`", this.userService);
 
-		assertEquals(
-				"Task 2: The `WebClient` should be set to have a `baseUrl` of `http://localhost:8081`",
+		assertEquals("Task 2: The `WebClient` should be set to have a `baseUrl` of `http://localhost:8081`",
 				"http://localhost:8081", WebClientPostProcessor.userBaseUrl);
 
 		String name = this.userService.getFullName("user")
-				.orElseGet(() -> fail("Task 2: `UserService#getFullName` returned no results for username `user`. " +
-						"Make sure that you are calling the `/user/{username}/fullName` endpoint in the implementation"));
-		assertEquals(
-				"Task 2: `UserService#getFullName` returned an unexpected result for username `user`. " +
-						"Make sure that you are calling the `/user/{username}/fullName` endpoint in the implementation",
+				.orElseGet(() -> fail("Task 2: `UserService#getFullName` returned no results for username `user`. "
+						+ "Make sure that you are calling the `/user/{username}/fullName` endpoint in the implementation"));
+		assertEquals("Task 2: `UserService#getFullName` returned an unexpected result for username `user`. "
+				+ "Make sure that you are calling the `/user/{username}/fullName` endpoint in the implementation",
 				"User Userson", name);
 
 		assertTrue(
-				"Task 2: It doesn't appear that the `WebClient` is getting called. Make sure that you are " +
-						"invoking the `WebClient` to address the `/user/{username}/fullName` endpoint.",
+				"Task 2: It doesn't appear that the `WebClient` is getting called. Make sure that you are "
+						+ "invoking the `WebClient` to address the `/user/{username}/fullName` endpoint.",
 				this.userEndpoint.getRequestCount() > 0);
 	}
 
@@ -314,17 +297,14 @@ public class Module6_Tests {
 		task_2();
 
 		// publish web client
-		assertNotNull(
-				"Task 3: Make sure you are adding an instance of `ServletBearerExchangeFilterFunction` to your " +
-						"`WebClient.Builder` definition",
-				getFilter(ServletBearerExchangeFilterFunction.class));
+		assertNotNull("Task 3: Make sure you are adding an instance of `ServletBearerExchangeFilterFunction` to your "
+				+ "`WebClient.Builder` definition", getFilter(ServletBearerExchangeFilterFunction.class));
 	}
 
 	private <T extends ExchangeFilterFunction> T getFilter(Class<T> clazz) throws Exception {
 		Field filtersField = this.web.getClass().getDeclaredField("filters");
 		filtersField.setAccessible(true);
-		List<ExchangeFilterFunction> filters = (List<ExchangeFilterFunction>)
-				filtersField.get(this.web);
+		List<ExchangeFilterFunction> filters = (List<ExchangeFilterFunction>) filtersField.get(this.web);
 		if (filters == null) {
 			return null;
 		}
@@ -349,8 +329,8 @@ public class Module6_Tests {
 		try {
 			Iterable<Resolution> resolutions = this.resolutionController.read();
 			assertTrue(
-					"Task 4: It appears that `ResolutionController` is not calling `UserService`. " +
-							"Make sure to switch `UserRepository` with `UserService`",
+					"Task 4: It appears that `ResolutionController` is not calling `UserService`. "
+							+ "Make sure to switch `UserRepository` with `UserService`",
 					this.userEndpoint.getRequestCount() > count);
 			for (Resolution resolution : resolutions) {
 				assertTrue(

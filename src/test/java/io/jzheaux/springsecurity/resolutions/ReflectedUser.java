@@ -1,18 +1,18 @@
 package io.jzheaux.springsecurity.resolutions;
 
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getConstructor;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldByColumnName;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldByName;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldHavingAnnotation;
+import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getProperty;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.UUID;
 
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getConstructor;
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldByColumnName;
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldByName;
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getDeclaredFieldHavingAnnotation;
-import static io.jzheaux.springsecurity.resolutions.ReflectionSupport.getProperty;
+import javax.persistence.Id;
 
 public class ReflectedUser {
 	static Constructor defaultConstructor;
@@ -29,21 +29,28 @@ public class ReflectedUser {
 
 	static {
 		defaultConstructor = getConstructor(User.class);
-		if (defaultConstructor != null) defaultConstructor.setAccessible(true);
+		if (defaultConstructor != null)
+			defaultConstructor.setAccessible(true);
 		copyConstructor = getConstructor(User.class, User.class);
 		idColumnField = getDeclaredFieldHavingAnnotation(User.class, Id.class);
 		usernameColumnField = getDeclaredFieldByColumnName(User.class, "username");
-		if (usernameColumnField != null) usernameColumnField.setAccessible(true);
+		if (usernameColumnField != null)
+			usernameColumnField.setAccessible(true);
 		passwordColumnField = getDeclaredFieldByColumnName(User.class, "password");
-		if (passwordColumnField != null) passwordColumnField.setAccessible(true);
+		if (passwordColumnField != null)
+			passwordColumnField.setAccessible(true);
 		enabledColumnField = getDeclaredFieldByColumnName(User.class, "enabled");
-		if (enabledColumnField != null) enabledColumnField.setAccessible(true);
+		if (enabledColumnField != null)
+			enabledColumnField.setAccessible(true);
 		nameColumnField = getDeclaredFieldByColumnName(User.class, "full_name");
-		if (nameColumnField != null) nameColumnField.setAccessible(true);
+		if (nameColumnField != null)
+			nameColumnField.setAccessible(true);
 		subscriptionColumnField = getDeclaredFieldByColumnName(User.class, "subscription");
-		if (subscriptionColumnField != null) subscriptionColumnField.setAccessible(true);
+		if (subscriptionColumnField != null)
+			subscriptionColumnField.setAccessible(true);
 		userAuthorityCollectionField = getDeclaredFieldByName(User.class, "userAuthorities");
-		if (userAuthorityCollectionField != null) userAuthorityCollectionField.setAccessible(true);
+		if (userAuthorityCollectionField != null)
+			userAuthorityCollectionField.setAccessible(true);
 		userFriendCollectionField = getDeclaredFieldByName(User.class, "friends");
 		try {
 			grantAuthorityMethod = User.class.getDeclaredMethod("grantAuthority", String.class);
@@ -86,15 +93,21 @@ public class ReflectedUser {
 		return getProperty(this.user, passwordColumnField);
 	}
 
-	String getFullName() { return getProperty(this.user, nameColumnField); }
+	String getFullName() {
+		return getProperty(this.user, nameColumnField);
+	}
 
-	String getSubscription() { return getProperty(this.user, subscriptionColumnField); }
+	String getSubscription() {
+		return getProperty(this.user, subscriptionColumnField);
+	}
 
 	Collection<UserAuthority> getUserAuthorities() {
 		return getProperty(this.user, userAuthorityCollectionField);
 	}
 
-	Collection<User> getFriends() { return getProperty(this.user, userFriendCollectionField); }
+	Collection<User> getFriends() {
+		return getProperty(this.user, userFriendCollectionField);
+	}
 
 	void grantAuthority(String authority) {
 		try {

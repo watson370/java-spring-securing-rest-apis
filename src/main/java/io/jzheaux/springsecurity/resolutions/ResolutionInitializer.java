@@ -3,8 +3,6 @@ package io.jzheaux.springsecurity.resolutions;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 public class ResolutionInitializer implements SmartInitializingSingleton {
 	private final ResolutionRepository resolutions;
@@ -20,7 +18,8 @@ public class ResolutionInitializer implements SmartInitializingSingleton {
 		this.resolutions.save(new Resolution("Read War and Peace", "user"));
 		this.resolutions.save(new Resolution("Free Solo the Eiffel Tower", "user"));
 		this.resolutions.save(new Resolution("Hang Christmas Lights", "user"));
-//		User user = new User("user", "{bcrypt}$2a$10$gapS/EuYW0GtvZ8e3wcpguwffeOL1Fq1dX.wEY72n/mzpM3KcifKW");
+		// User user = new User("user",
+		// "{bcrypt}$2a$10$gapS/EuYW0GtvZ8e3wcpguwffeOL1Fq1dX.wEY72n/mzpM3KcifKW");
 		User user = new User();
 		user.setUsername("user");
 		user.setPassword("{bcrypt}$2a$10$MywQEqdZFNIYnx.Ro/VQ0ulanQAl34B5xVjK2I/SDZNVGS5tHQ08W");
@@ -38,6 +37,10 @@ public class ResolutionInitializer implements SmartInitializingSingleton {
 		haswrite.setPassword("{bcrypt}$2a$10$MywQEqdZFNIYnx.Ro/VQ0ulanQAl34B5xVjK2I/SDZNVGS5tHQ08W");
 		haswrite.grantAuthority("resolution:write");
 		this.userRepository.save(haswrite);
+
+		User admin = new User("admin", "{bcrypt}$2a$10$bTu5ilpT4YILX8dOWM/05efJnoSlX4ElNnjhNopL9aPoRyUgvXAYa");
+		admin.grantAuthority("ROLE_ADMIN");
+		this.userRepository.save(admin);
 	}
 
 }

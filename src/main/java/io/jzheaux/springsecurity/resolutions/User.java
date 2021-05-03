@@ -1,17 +1,18 @@
 package io.jzheaux.springsecurity.resolutions;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.UUID;
+
 @Entity(name = "users")
 public class User implements Serializable {
     @Id
@@ -28,6 +29,7 @@ public class User implements Serializable {
     User() {
         this.id = UUID.randomUUID();
     }
+
     public User(User user) {
         this.id = user.id;
         this.username = user.username;
@@ -35,6 +37,7 @@ public class User implements Serializable {
         this.enabled = user.enabled;
         this.userAuthorities = user.userAuthorities;
     }
+
     public User(String username, String password) {
         this.id = UUID.randomUUID();
         this.username = username;
@@ -76,6 +79,7 @@ public class User implements Serializable {
     public Collection<UserAuthority> getUserAuthorities() {
         return Collections.unmodifiableCollection(this.userAuthorities);
     }
+
     public void grantAuthority(String authority) {
         UserAuthority userAuthority = new UserAuthority(this, authority);
         this.userAuthorities.add(userAuthority);
