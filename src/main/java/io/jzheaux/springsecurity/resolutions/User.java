@@ -19,6 +19,8 @@ public class User implements Serializable {
     UUID id;
     @Column
     String username;
+    @Column(name = "full_name")
+    String fullName;
     @Column
     String password;
     @Column
@@ -36,12 +38,14 @@ public class User implements Serializable {
         this.password = user.password;
         this.enabled = user.enabled;
         this.userAuthorities = user.userAuthorities;
+        this.fullName = user.fullName;
     }
 
-    public User(String username, String password) {
+    public User(String username, String password, String fullName) {
         this.id = UUID.randomUUID();
         this.username = username;
         this.password = password;
+        this.fullName = fullName;
     }
 
     public UUID getId() {
@@ -58,6 +62,14 @@ public class User implements Serializable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPassword() {
@@ -85,4 +97,15 @@ public class User implements Serializable {
         this.userAuthorities.add(userAuthority);
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", userAuthorities=" + userAuthorities +
+                '}';
+    }
 }

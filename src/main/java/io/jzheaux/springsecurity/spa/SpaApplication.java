@@ -21,7 +21,9 @@ public class SpaApplication {
 		protected void configure(HttpSecurity http) throws Exception {
 			http
 				.authorizeRequests(authz -> authz
-					.anyRequest().permitAll());
+					.anyRequest()
+//						.authenticated());
+						.permitAll());
 		}
 	}
 

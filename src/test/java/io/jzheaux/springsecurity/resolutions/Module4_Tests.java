@@ -316,7 +316,6 @@ public class Module4_Tests {
         assertEquals(
                 "Task 4: Update your copy constructor so that the full name is also copied",
                 user.getFullName(), copy.getFullName());
-
         assertTrue(
                 "Task 4: Please give each user a name by calling `setFullName` in `ResolutionInitializer`.",
                 StringUtils.hasText(user.getFullName()));
