@@ -27,6 +27,11 @@ public class User implements Serializable {
     boolean enabled = true;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     Collection<UserAuthority> userAuthorities = new ArrayList<>();
+    //adding friends and subscription level
+    @Column
+    String subscription;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    Collection<User> friends = new ArrayList<>();
 
     User() {
         this.id = UUID.randomUUID();
@@ -39,6 +44,8 @@ public class User implements Serializable {
         this.enabled = user.enabled;
         this.userAuthorities = user.userAuthorities;
         this.fullName = user.fullName;
+        this.subscription = user.subscription;
+        this.friends = user.friends;//todo make a copy
     }
 
     public User(String username, String password, String fullName) {
@@ -95,6 +102,22 @@ public class User implements Serializable {
     public void grantAuthority(String authority) {
         UserAuthority userAuthority = new UserAuthority(this, authority);
         this.userAuthorities.add(userAuthority);
+    }
+
+    public String getSubscription() {
+        return subscription;
+    }
+
+    public void setSubscription(String subscription) {
+        this.subscription = subscription;
+    }
+
+    public Collection<User> getFriends() {
+        return friends;
+    }
+
+    public void addFriend(User user){
+        friends.add(user);
     }
 
     @Override

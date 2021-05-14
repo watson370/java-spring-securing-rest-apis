@@ -1,0 +1,8 @@
+http -a admin:password :8080/resolutions
+echo -n "New Resolution: TODO"  | http -a user:password :8080/resolution
+
+% . ./token-for one user "resolution:read"
+echo $TOKEN  #if you want to see it
+http :8080/resolutions "Authorization:Bearer $TOKEN"
+
+need to request resolution:write, can I do multiple scopes?

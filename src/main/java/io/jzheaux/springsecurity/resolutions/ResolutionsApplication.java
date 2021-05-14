@@ -3,6 +3,7 @@ package io.jzheaux.springsecurity.resolutions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,6 +11,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.introspection.NimbusOpaqueTokenIntrospector;
+import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -29,7 +32,7 @@ public class ResolutionsApplication extends WebSecurityConfigurerAdapter {
                 .authenticated())
                 .httpBasic(basic -> {
                 })
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt().jwtAuthenticationConverter(this.authenticationConverter))//add UserRepositoryJwtAuthenticationConverter directly in DSL here, since it is a concrete impl instead of an interface you can't create a bean and have it picked up automatically
+                .oauth2ResourceServer(oauth2 -> oauth2.opaqueToken())                            //jwt().jwtAuthenticationConverter(this.authenticationConverter))//add UserRepositoryJwtAuthenticationConverter directly in DSL here, since it is a concrete impl instead of an interface you can't create a bean and have it picked up automatically
                 .cors(cors -> {//somehow this configures spring security to allow CORS handshake
                 });
 //        http.csrf().disable();// todo
@@ -60,4 +63,16 @@ public class ResolutionsApplication extends WebSecurityConfigurerAdapter {
 //        authenticationConverter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
 //        return authenticationConverter;
 //    }
+    @Bean
+    public OpaqueTokenIntrospector introspector(
+            UserRepository userRepository,
+            OAuth2ResourceServerProperties oAuth2ResourceServerProperties){
+        OAuth2ResourceServerProperties.Opaquetoken ot = oAuth2ResourceServerProperties.getOpaquetoken();
+        OpaqueTokenIntrospector introspector = new NimbusOpaqueTokenIntrospector(
+                oAuth2ResourceServerProperties.getOpaquetoken().getIntrospectionUri(),
+                oAuth2ResourceServerProperties.getOpaquetoken().getClientId(),
+                oAuth2ResourceServerProperties.getOpaquetoken().getClientSecret()
+        );
+        return new UserRepositoryOpaqueTokenIntrospector(userRepository, introspector);
+    }
 }
