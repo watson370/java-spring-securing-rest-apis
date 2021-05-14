@@ -25,15 +25,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ResolutionController {
 	private final ResolutionRepository resolutions;
-	private final UserRepository users;
+	private final UserService users;
 
-	public ResolutionController(ResolutionRepository resolutions, UserRepository userRepository) {
+	public ResolutionController(ResolutionRepository resolutions, UserService userService) {
 		this.resolutions = resolutions;
-		this.users = userRepository;
+		this.users = userService;
 	}
 
 	@GetMapping("/resolutions")
-	@CrossOrigin(maxAge = 0, allowCredentials = "true")//remove max age after finished with module
+	@CrossOrigin
 	@PreAuthorize("hasAuthority('resolution:read')")
 	@PostFilter("@post.filter(#root)")
 	public Iterable<Resolution> read() {
@@ -41,8 +41,9 @@ public class ResolutionController {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if(authentication.getAuthorities().contains(new SimpleGrantedAuthority("user:read"))){
 			for(Resolution resolution : resolutions){
-				String fullName = this.users.findByUsername(resolution.getOwner())
-						.map(User::getFullName).orElse("Anonymous");
+				String fullName = this.users.getFullName(resolution.getOwner())
+//						.map(User::getFullName)
+						.orElse("Anonymous");
 				resolution.setText(resolution.getText() + ", by " + fullName);
 			}
 		}

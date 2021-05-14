@@ -13,6 +13,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.introspection.NimbusOpaqueTokenIntrospector;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
+import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServerBearerExchangeFilterFunction;
+import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServletBearerExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -74,5 +77,12 @@ public class ResolutionsApplication extends WebSecurityConfigurerAdapter {
                 oAuth2ResourceServerProperties.getOpaquetoken().getClientSecret()
         );
         return new UserRepositoryOpaqueTokenIntrospector(userRepository, introspector);
+    }
+
+    @Bean
+    public WebClient.Builder web(){
+        return WebClient.builder()
+                .baseUrl("http://localhost:8081")//does every call on the builder return a new builder?
+                .filter(new ServletBearerExchangeFilterFunction()); //now for each request made with this web client, Spring Security will look up the Bearer Token in the current Security Context and pass it along
     }
 }
